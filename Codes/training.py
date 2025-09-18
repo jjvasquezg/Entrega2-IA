@@ -11,7 +11,7 @@ from sklearn.impute import SimpleImputer
 from sklearn.compose import ColumnTransformer
 
 import tensorflow as tf
-from tensorflow.keras import models, layers, regularizers
+from keras import models, layers, regularizers
 
 # --- Cargar dataset ---
 df = pd.read_csv("data.csv")

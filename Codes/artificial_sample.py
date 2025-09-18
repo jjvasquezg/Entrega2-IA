@@ -1,3 +1,5 @@
+import pandas as pd
+
 # --- Seleccionar el modelo final (Random Forest entrenado previamente) ---
 modelo_final = rf  # asumimos que Random Forest fue el elegido
 
