@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 
 # --- Cargar dataset ---
-df = pd.read_csv("data.csv")
+df = pd.read_csv("../data.csv")
 
 # --- Limpieza inicial de variables ---
 df['Ram_GB'] = df['Ram'].str.replace('GB','', regex=False).astype(int)
