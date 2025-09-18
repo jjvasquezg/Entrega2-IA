@@ -197,7 +197,7 @@ def prueba_muestra_artificial(modelo, preprocessor):
 
 if __name__ == "__main__":
     # Cargar datos
-    X, y, num_cols, cat_cols = cargar_y_preprocesar_datos("data.csv")
+    X, y, num_cols, cat_cols = cargar_y_preprocesar_datos("../data.csv")
     preprocessor = crear_preprocesador(num_cols, cat_cols)
     X_train, X_val, X_test, y_train, y_val, y_test = dividir_datos(X, y)
 
