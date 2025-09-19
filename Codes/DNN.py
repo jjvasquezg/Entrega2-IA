@@ -1,5 +1,3 @@
-# pipeline_training.py
-
 # --- Librerías ---
 import pandas as pd
 import numpy as np
@@ -15,9 +13,7 @@ from sklearn.pipeline import Pipeline
 import tensorflow as tf
 from keras import models, layers, regularizers, metrics, optimizers
 
-# ============================================================
 # 3. PROCESAMIENTO DE DATOS
-# ============================================================
 
 def cargar_y_preprocesar_datos(path="data.csv"):
     """Carga dataset y genera variables derivadas"""
@@ -72,9 +68,7 @@ def dividir_datos(X, y):
     return X_train, X_val, X_test, y_train, y_val, y_test
 
 
-# ============================================================
 # 4. ENTRENAMIENTO DE MODELOS
-# ============================================================
 
 def evaluar_modelo(model, X_train, y_train, X_val, y_val, X_test, y_test):
     """Evalúa un modelo y devuelve métricas RMSE y R2"""
@@ -160,12 +154,10 @@ def entrenar_modelos(X_train, X_val, X_test, y_train, y_val, y_test, preprocesso
     return resultados, rf, preprocessor, dnn
 
 
-# ============================================================
 # 5. PRUEBA CON MUESTRA ARTIFICIAL
-# ============================================================
 
 def prueba_muestra_artificial(modelo, preprocessor):
-    """Genera muestra artificial y predice"""
+    # Muestra artificial generada
     nueva_muestra = pd.DataFrame([{
         "Company": "Dell",
         "TypeName": "Gaming",
@@ -193,14 +185,13 @@ def prueba_muestra_artificial(modelo, preprocessor):
     return pred[0]
 
 
-# ============================================================
 # MAIN
-# ============================================================
 
 if __name__ == "__main__":
-    # Cargar datos
+
     random_state=42
 
+    # Cargar datos
     X, y, num_cols, cat_cols = cargar_y_preprocesar_datos("../data.csv")
     preprocessor = crear_preprocesador(num_cols, cat_cols)
     X_train, X_val, X_test, y_train, y_val, y_test = dividir_datos(X, y)
