@@ -10,7 +10,6 @@ from sklearn.preprocessing import StandardScaler, OneHotEncoder
 from sklearn.impute import SimpleImputer
 from sklearn.compose import ColumnTransformer
 from sklearn.pipeline import Pipeline
-import tensorflow as tf
 from keras import models, layers, regularizers, metrics, optimizers
 
 # 3. PROCESAMIENTO DE DATOS
@@ -96,7 +95,7 @@ def entrenar_modelos(X_train, X_val, X_test, y_train, y_val, y_test, preprocesso
     # --- kNN ---
     knn = Pipeline(steps=[
         ('preprocessor', preprocessor),
-        ('model', KNeighborsRegressor(n_neighbors=5))
+        ('model', KNeighborsRegressor(n_neighbors=5, weights='distance'))
     ])
     knn.fit(X_train, y_train)
     resultados['kNN'] = evaluar_modelo(knn, X_train, y_train, X_val, y_val, X_test, y_test)
@@ -118,19 +117,29 @@ def entrenar_modelos(X_train, X_val, X_test, y_train, y_val, y_test, preprocesso
     input_dim = X_train_proc.shape[1]
 
     dnn = models.Sequential([
-        layers.Dense(128, activation='relu', kernel_regularizer=regularizers.l2(0.001), input_dim=input_dim),
-        layers.Dropout(0.3),
-        layers.Dense(64, activation='relu', kernel_regularizer=regularizers.l2(0.001)),
-        layers.Dropout(0.3),
-        layers.Dense(32, activation='relu', kernel_regularizer=regularizers.l2(0.001)),
+        layers.Input(shape=(input_dim,)),
+        layers.Dense(128, kernel_initializer='he_normal', kernel_regularizer=regularizers.l2(0.001)),
+        layers.BatchNormalization(),
+        layers.Activation('relu'),
+        layers.Dropout(0.15),
+
+        layers.Dense(64, kernel_initializer='he_normal', kernel_regularizer=regularizers.l2(0.001)),
+        layers.BatchNormalization(),
+        layers.Activation('relu'),
+        layers.Dropout(0.15),
+
+        layers.Dense(32, kernel_initializer='he_normal', kernel_regularizer=regularizers.l2(0.001)),
+        layers.BatchNormalization(),
+        layers.Activation('relu'),
+
         layers.Dense(1)
     ])
 
     dnn.summary()
 
-    dnn.compile(optimizer=optimizers.Adam(learning_rate=0.1), loss='mse', metrics=[metrics.RootMeanSquaredError()])
+    dnn.compile(optimizer=optimizers.Adam(learning_rate=0.01), loss='mse', metrics=[metrics.RootMeanSquaredError()])
     dnn.fit(X_train_proc, y_train, validation_data=(X_val_proc, y_val), validation_batch_size=X_val_proc.shape[0],
-            epochs=32, batch_size=32, verbose=0)
+            epochs=200, batch_size=128, verbose=0)
 
     def evaluar_dnn(model, X_train, y_train, X_val, y_val, X_test, y_test):
         res = {}
