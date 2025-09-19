@@ -3,9 +3,9 @@
 # --- Librerías ---
 import pandas as pd
 import numpy as np
-import joblib
+from matplotlib import pyplot as plt
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import mean_squared_error, r2_score
+from sklearn.metrics import root_mean_squared_error, r2_score
 from sklearn.neighbors import KNeighborsRegressor
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.preprocessing import StandardScaler, OneHotEncoder
@@ -13,7 +13,7 @@ from sklearn.impute import SimpleImputer
 from sklearn.compose import ColumnTransformer
 from sklearn.pipeline import Pipeline
 import tensorflow as tf
-from tensorflow.keras import models, layers, regularizers
+from keras import models, layers, regularizers, metrics, optimizers
 
 # ============================================================
 # 3. PROCESAMIENTO DE DATOS
@@ -21,7 +21,7 @@ from tensorflow.keras import models, layers, regularizers
 
 def cargar_y_preprocesar_datos(path="data.csv"):
     """Carga dataset y genera variables derivadas"""
-    df = pd.read_csv(path)
+    df = pd.read_csv(path, header=0)
 
     # Features derivadas
     df['Ram_GB'] = df['Ram'].str.replace('GB','', regex=False).astype(int)
@@ -83,13 +83,13 @@ def evaluar_modelo(model, X_train, y_train, X_val, y_val, X_test, y_test):
     y_pred_val = model.predict(X_val)
     y_pred_test = model.predict(X_test)
 
-    res['RMSE_train'] = mean_squared_error(y_train, y_pred_train, squared=False)
+    res['RMSE_train'] = root_mean_squared_error(y_train, y_pred_train)
     res['R2_train'] = r2_score(y_train, y_pred_train)
 
-    res['RMSE_val'] = mean_squared_error(y_val, y_pred_val, squared=False)
+    res['RMSE_val'] = root_mean_squared_error(y_val, y_pred_val)
     res['R2_val'] = r2_score(y_val, y_pred_val)
 
-    res['RMSE_test'] = mean_squared_error(y_test, y_pred_test, squared=False)
+    res['RMSE_test'] = root_mean_squared_error(y_test, y_pred_test)
     res['R2_test'] = r2_score(y_test, y_pred_test)
 
     return res
@@ -132,9 +132,11 @@ def entrenar_modelos(X_train, X_val, X_test, y_train, y_val, y_test, preprocesso
         layers.Dense(1)
     ])
 
-    dnn.compile(optimizer='adam', loss='mse', metrics=[tf.keras.metrics.RootMeanSquaredError()])
-    dnn.fit(X_train_proc, y_train, validation_data=(X_val_proc, y_val),
-            epochs=30, batch_size=32, verbose=0)
+    dnn.summary()
+
+    dnn.compile(optimizer=optimizers.Adam(learning_rate=0.1), loss='mse', metrics=[metrics.RootMeanSquaredError()])
+    dnn.fit(X_train_proc, y_train, validation_data=(X_val_proc, y_val), validation_batch_size=X_val_proc.shape[0],
+            epochs=32, batch_size=32, verbose=0)
 
     def evaluar_dnn(model, X_train, y_train, X_val, y_val, X_test, y_test):
         res = {}
@@ -142,13 +144,13 @@ def entrenar_modelos(X_train, X_val, X_test, y_train, y_val, y_test, preprocesso
         y_pred_val = model.predict(X_val).flatten()
         y_pred_test = model.predict(X_test).flatten()
 
-        res['RMSE_train'] = mean_squared_error(y_train, y_pred_train, squared=False)
+        res['RMSE_train'] = root_mean_squared_error(y_train, y_pred_train)
         res['R2_train'] = r2_score(y_train, y_pred_train)
 
-        res['RMSE_val'] = mean_squared_error(y_val, y_pred_val, squared=False)
+        res['RMSE_val'] = root_mean_squared_error(y_val, y_pred_val)
         res['R2_val'] = r2_score(y_val, y_pred_val)
 
-        res['RMSE_test'] = mean_squared_error(y_test, y_pred_test, squared=False)
+        res['RMSE_test'] = root_mean_squared_error(y_test, y_pred_test)
         res['R2_test'] = r2_score(y_test, y_pred_test)
 
         return res
@@ -197,6 +199,8 @@ def prueba_muestra_artificial(modelo, preprocessor):
 
 if __name__ == "__main__":
     # Cargar datos
+    random_state=42
+
     X, y, num_cols, cat_cols = cargar_y_preprocesar_datos("../data.csv")
     preprocessor = crear_preprocesador(num_cols, cat_cols)
     X_train, X_val, X_test, y_train, y_val, y_test = dividir_datos(X, y)
@@ -210,10 +214,6 @@ if __name__ == "__main__":
     df_resultados = pd.DataFrame(resultados).T
     print("\n=== Resultados comparativos ===")
     print(df_resultados)
-
-    # Guardar mejor modelo (ej: Random Forest)
-    joblib.dump(rf, "random_forest_model.pkl")
-    joblib.dump(preprocessor, "preprocessor.pkl")
 
     # Probar con muestra artificial
     print("\n=== Prueba con muestra artificial ===")
