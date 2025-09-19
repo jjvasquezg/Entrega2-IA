@@ -139,7 +139,7 @@ def entrenar_modelos(X_train, X_val, X_test, y_train, y_val, y_test, preprocesso
 
     dnn.compile(optimizer=optimizers.Adam(learning_rate=0.01), loss='mse', metrics=[metrics.RootMeanSquaredError()])
     dnn.fit(X_train_proc, y_train, validation_data=(X_val_proc, y_val), validation_batch_size=X_val_proc.shape[0],
-            epochs=200, batch_size=128, verbose=0)
+            epochs=200, batch_size=128)
 
     def evaluar_dnn(model, X_train, y_train, X_val, y_val, X_test, y_test):
         res = {}
@@ -168,7 +168,7 @@ def entrenar_modelos(X_train, X_val, X_test, y_train, y_val, y_test, preprocesso
 def prueba_muestra_artificial(modelo, preprocessor):
     # Muestra artificial generada
     nueva_muestra = pd.DataFrame([{
-        "Company": "Dell",
+        "Company": "Razer",
         "TypeName": "Gaming",
         "Inches": 15.6,
         "Cpu": "Intel Core i7 2.8GHz",
